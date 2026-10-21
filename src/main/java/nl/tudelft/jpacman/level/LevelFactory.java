@@ -83,11 +83,22 @@ public class LevelFactory {
      * @return A new level for the board.
      */
     public Level createLevel(Board board, List<Ghost> ghosts, List<Square> startPositions) {
+        return createLevel(board, ghosts, startPositions,
+            java.util.Collections.<Integer, GateCircuit>emptyMap());
+    }
 
-        // We'll adopt the simple collision map for now.
+    /**
+     * Creates a level with its circuit controllers.
+     * @param board board containing the level squares
+     * @param ghosts ghosts present in the level
+     * @param startPositions player starting squares
+     * @param circuits controllers for each gate circuit
+     * @return the configured level
+     */
+    public Level createLevel(Board board, List<Ghost> ghosts, List<Square> startPositions,
+                             Map<Integer, GateCircuit> circuits) {
         CollisionMap collisionMap = new PlayerCollisions(pointCalculator);
-
-        return new Level(board, ghosts, startPositions, collisionMap);
+        return new Level(board, ghosts, startPositions, collisionMap, circuits);
     }
 
     /**

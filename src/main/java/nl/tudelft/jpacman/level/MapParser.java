@@ -6,9 +6,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import nl.tudelft.jpacman.PacmanConfigurationException;
 import nl.tudelft.jpacman.board.Board;
+import nl.tudelft.jpacman.board.GateSquare;
 import nl.tudelft.jpacman.board.BoardFactory;
 import nl.tudelft.jpacman.board.Square;
 import nl.tudelft.jpacman.npc.Ghost;
@@ -64,74 +67,160 @@ public class MapParser {
     public Level parseMap(char[][] map) {
         int width = map.length;
         int height = map[0].length;
+        ParseState state = new ParseState(width, height);
+        makeGrid(map, state);
+        boolean usesCircuits = !state.gates.isEmpty() || !state.switches.isEmpty();
+        if (usesCircuits) {
+            validateCircuits(state.gates, state.switches);
+        }
 
-        Square[][] grid = new Square[width][height];
-
-        List<Ghost> ghosts = new ArrayList<>();
-        List<Square> startPositions = new ArrayList<>();
-
-        makeGrid(map, width, height, grid, ghosts, startPositions);
-
-        Board board = boardCreator.createBoard(grid);
-        return levelCreator.createLevel(board, ghosts, startPositions);
+        Board board = boardCreator.createBoard(state.grid);
+        Map<Integer, GateCircuit> circuits = new HashMap<>();
+        if (usesCircuits) {
+            for (int id = 1; id <= 2; id++) {
+                circuits.put(id, new GateCircuit(id, state.gates.get(id)));
+            }
+        }
+        return levelCreator.createLevel(
+            board, state.ghosts, state.startPositions, circuits);
     }
 
-    private void makeGrid(char[][] map, int width, int height,
-                          Square[][] grid, List<Ghost> ghosts, List<Square> startPositions) {
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                char c = map[x][y];
-                addSquare(grid, ghosts, startPositions, x, y, c);
+    /** Holds the mutable data collected while parsing one map. */
+    private static final class ParseState {
+        private final Square[][] grid;
+        private final List<Ghost> ghosts = new ArrayList<>();
+        private final List<Square> startPositions = new ArrayList<>();
+        private final Map<Integer, List<GateSquare>> gates = new HashMap<>();
+        private final Map<Integer, Integer> switches = new HashMap<>();
+
+        ParseState(int width, int height) {
+            grid = new Square[width][height];
+        }
+    }
+
+    private void makeGrid(char[][] map, ParseState state) {
+        for (int x = 0; x < map.length; x++) {
+            for (int y = 0; y < map[x].length; y++) {
+                addSquare(state, x, y, map[x][y]);
             }
         }
     }
 
     /**
-     * Adds a square to the grid based on a given character. These
-     * character come from the map files and describe the type
-     * of square.
-     *
-     * @param grid
-     *            The grid of squares with board[x][y] being the
-     *            square at column x, row y.
-     * @param ghosts
-     *            List of all ghosts that were added to the map.
-     * @param startPositions
-     *            List of all start positions that were added
-     *            to the map.
-     * @param x
-     *            x coordinate of the square.
-     * @param y
-     *            y coordinate of the square.
-     * @param c
-     *            Character describing the square type.
+     * Adds a square to the grid based on a map character.
+     * @param grid grid receiving the new square
+     * @param ghosts ghosts already present in the map
+     * @param startPositions player start squares already present
+     * @param x horizontal coordinate
+     * @param y vertical coordinate
+     * @param c map character describing the square
      */
     protected void addSquare(Square[][] grid, List<Ghost> ghosts,
                              List<Square> startPositions, int x, int y, char c) {
+        ParseState state = new ParseState(grid.length, grid[0].length);
+        for (int column = 0; column < grid.length; column++) {
+            System.arraycopy(grid[column], 0, state.grid[column], 0, grid[column].length);
+        }
+        state.ghosts.addAll(ghosts);
+        state.startPositions.addAll(startPositions);
+        addSquare(state, x, y, c);
+        grid[x][y] = state.grid[x][y];
+        ghosts.clear();
+        ghosts.addAll(state.ghosts);
+        startPositions.clear();
+        startPositions.addAll(state.startPositions);
+    }
+
+    private void addSquare(ParseState state, int x, int y, char c) {
         switch (c) {
             case ' ':
-                grid[x][y] = boardCreator.createGround();
+                state.grid[x][y] = boardCreator.createGround();
                 break;
             case '#':
-                grid[x][y] = boardCreator.createWall();
+                state.grid[x][y] = boardCreator.createWall();
                 break;
             case '.':
-                Square pelletSquare = boardCreator.createGround();
-                grid[x][y] = pelletSquare;
-                levelCreator.createPellet().occupy(pelletSquare);
+                addPelletSquare(state, x, y);
                 break;
             case 'G':
-                Square ghostSquare = makeGhostSquare(ghosts, levelCreator.createGhost());
-                grid[x][y] = ghostSquare;
+                state.grid[x][y] = makeGhostSquare(
+                    state.ghosts, levelCreator.createGhost());
                 break;
             case 'P':
-                Square playerSquare = boardCreator.createGround();
-                grid[x][y] = playerSquare;
-                startPositions.add(playerSquare);
+                addPlayerStart(state, x, y);
+                break;
+            case '1':
+            case '2':
+                addSwitchSquare(state, x, y, c - '0');
+                break;
+            case 'a':
+            case 'b':
+                addGateSquare(state, x, y, gateCircuitId(c));
                 break;
             default:
-                throw new PacmanConfigurationException("Invalid character at "
-                    + x + "," + y + ": " + c);
+                throw new PacmanConfigurationException("Invalid symbol " + c + " at " + x + y);
+        }
+    }
+
+    private void addPelletSquare(ParseState state, int x, int y) {
+        Square square = boardCreator.createGround();
+        state.grid[x][y] = square;
+        levelCreator.createPellet().occupy(square);
+    }
+
+    private void addPlayerStart(ParseState state, int x, int y) {
+        Square square = boardCreator.createGround();
+        state.grid[x][y] = square;
+        state.startPositions.add(square);
+    }
+
+    private void addSwitchSquare(ParseState state, int x, int y, int circuitId) {
+        state.grid[x][y] = boardCreator.createSwitch(circuitId);
+        Integer count = state.switches.get(circuitId);
+        if (count == null) {
+            state.switches.put(circuitId, 1);
+        } else {
+            state.switches.put(circuitId, count + 1);
+        }
+    }
+
+    private void addGateSquare(ParseState state, int x, int y, int circuitId) {
+        GateSquare gate = boardCreator.createGate(circuitId);
+        state.grid[x][y] = gate;
+        if (!state.gates.containsKey(circuitId)) {
+            state.gates.put(circuitId, new ArrayList<GateSquare>());
+        }
+        state.gates.get(circuitId).add(gate);
+    }
+
+    private int gateCircuitId(char symbol) {
+        if (symbol == 'a') {
+            return 1;
+        }
+        return 2;
+    }
+
+    private String gateSymbol(int circuitId) {
+        if (circuitId == 1) {
+            return "a";
+        }
+        return "b";
+    }
+
+    private void validateCircuits(Map<Integer, List<GateSquare>> gates,
+                                  Map<Integer, Integer> switches) {
+        for (int id = 1; id <= 2; id++) {
+            if (!gates.containsKey(id) || gates.get(id).isEmpty()) {
+                String symbol = gateSymbol(id);
+                throw new PacmanConfigurationException(
+                    "Circuit " + id + " has no gate (expected symbol "
+                        + symbol + ").");
+            }
+            if (!switches.containsKey(id) || switches.get(id) == 0) {
+                throw new PacmanConfigurationException(
+                    "Circuit " + id + " has no switch (expected symbol "
+                        + id + ").");
+            }
         }
     }
 

@@ -133,6 +133,11 @@ public class PacManSprites extends SpriteStore {
         return loadSprite("/sprite/pellet.png");
     }
 
+    /** @return The fixed floor-switch sprite. */
+    public Sprite getSwitchSprite() {
+        return loadSprite("/sprite/key.png");
+    }
+
     /**
      * Overloads the default sprite loading, ignoring the exception. This class
      * assumes all sprites are provided, hence the exception will be thrown as a
