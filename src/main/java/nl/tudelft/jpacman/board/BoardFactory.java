@@ -1,5 +1,6 @@
 package nl.tudelft.jpacman.board;
 
+import nl.tudelft.jpacman.level.GateCircuit;
 import nl.tudelft.jpacman.sprite.PacManSprites;
 import nl.tudelft.jpacman.sprite.Sprite;
 
@@ -86,11 +87,11 @@ public class BoardFactory {
 
     /**
      * Creates a persistent floor switch for a circuit.
-     * @param circuitId identifier of the switch circuit
+     * @param circuit the switch circuit
      * @return a new switch square
      */
-    public SwitchSquare createSwitch(int circuitId) {
-        return new SwitchSquare(circuitId, sprites.getSwitchSprite());
+    public SwitchSquare createSwitch(GateCircuit circuit) {
+        return new SwitchSquare(circuit, sprites.getSwitchSprite());
     }
 
     /**

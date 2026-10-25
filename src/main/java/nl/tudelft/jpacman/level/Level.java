@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 import nl.tudelft.jpacman.board.Board;
 import nl.tudelft.jpacman.board.Direction;
-import nl.tudelft.jpacman.board.SwitchSquare;
 import nl.tudelft.jpacman.board.Square;
 import nl.tudelft.jpacman.board.Unit;
 import nl.tudelft.jpacman.npc.Ghost;
@@ -74,31 +73,10 @@ public class Level {
      */
     private final CollisionMap collisions;
 
-    /** Controllers for map circuits, keyed by circuit id. */
-    private final Map<Integer, GateCircuit> circuits;
-
     /**
      * The objects observing this level.
      */
     private final Set<LevelObserver> observers;
-
-    /**
-     * Creates a new level for the board.
-     *
-     * @param board
-     *            The board for the level.
-     * @param ghosts
-     *            The ghosts on the board.
-     * @param startPositions
-     *            The squares on which players start on this board.
-     * @param collisionMap
-     *            The collection of collisions that should be handled.
-     */
-    public Level(Board board, List<Ghost> ghosts, List<Square> startPositions,
-                 CollisionMap collisionMap) {
-        this(board, ghosts, startPositions, collisionMap,
-            java.util.Collections.<Integer, GateCircuit>emptyMap());
-    }
 
     /**
      * Creates a level with optional circuit controllers.
@@ -106,10 +84,9 @@ public class Level {
      * @param ghosts ghosts controlled by the level
      * @param startPositions player starting squares
      * @param collisionMap collision rules for entities
-     * @param circuits circuit controllers indexed by identifier
      */
     public Level(Board board, List<Ghost> ghosts, List<Square> startPositions,
-                 CollisionMap collisionMap, Map<Integer, GateCircuit> circuits) {
+                 CollisionMap collisionMap) {
         assert board != null;
         assert ghosts != null;
         assert startPositions != null;
@@ -124,7 +101,6 @@ public class Level {
         this.startSquareIndex = 0;
         this.players = new ArrayList<>();
         this.collisions = collisionMap;
-        this.circuits = new HashMap<>(circuits);
         this.observers = new HashSet<>();
     }
 
@@ -209,25 +185,9 @@ public class Level {
 
     private void enterDestination(Unit unit, Square destination) {
         List<Unit> occupants = destination.getOccupants();
-        boolean ghostWasOnSwitch = occupants.stream()
-            .anyMatch(Ghost.class::isInstance);
         unit.occupy(destination);
         for (Unit occupant : occupants) {
             collisions.collide(unit, occupant);
-        }
-        activateSwitch(unit, destination, ghostWasOnSwitch);
-    }
-
-    private void activateSwitch(Unit unit, Square destination,
-                                boolean ghostWasOnSwitch) {
-        if (!(unit instanceof Player) || !(destination instanceof SwitchSquare)
-            || ghostWasOnSwitch) {
-            return;
-        }
-        int circuitId = ((SwitchSquare) destination).getCircuitId();
-        GateCircuit circuit = circuits.get(circuitId);
-        if (circuit != null) {
-            circuit.toggle();
         }
     }
 

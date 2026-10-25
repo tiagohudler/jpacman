@@ -2,30 +2,28 @@ package nl.tudelft.jpacman.board;
 
 import java.awt.Color;
 import java.awt.Graphics;
+
+import nl.tudelft.jpacman.level.GateCircuit;
+import nl.tudelft.jpacman.level.Player;
 import nl.tudelft.jpacman.sprite.Sprite;
 
 /** A persistent floor switch; Level is responsible for activating it. */
 public final class SwitchSquare extends Square {
-    private final int circuitId;
     private final Sprite sprite;
+    private final GateCircuit circuit;
 
     /**
      * Creates a switch associated with a circuit.
-     * @param circuitId the owning circuit identifier (1 or 2)
+     * @param circuit the owning circuit
      * @param keySprite the sprite used to represent the switch
      */
-    public SwitchSquare(int circuitId, Sprite keySprite) {
-        if (circuitId != 1 && circuitId != 2) {
+    public SwitchSquare(GateCircuit circuit, Sprite keySprite) {
+        if (circuit == null) {
             throw new IllegalArgumentException(
-                "Circuit id must be 1 or 2: " + circuitId);
+                "Circuit cannot be null");
         }
-        this.circuitId = circuitId;
-        this.sprite = new MarkedSprite(keySprite, String.valueOf(circuitId));
-    }
-
-    /** @return the identifier of the circuit controlled by this switch */
-    public int getCircuitId() {
-        return circuitId;
+        this.circuit = circuit;
+        this.sprite = new MarkedSprite(keySprite, String.valueOf(circuit.getId()));
     }
 
     @Override
@@ -36,6 +34,15 @@ public final class SwitchSquare extends Square {
     @Override
     public Sprite getSprite() {
         return sprite;
+    }
+
+    @Override
+    void put(Unit occupant) {
+        super.put(occupant);
+
+        if (occupant instanceof Player) {
+            this.circuit.toggle();
+        }
     }
 
     /** Decorates the key sprite with the circuit identifier. */

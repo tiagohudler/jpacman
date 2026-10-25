@@ -1,7 +1,6 @@
 package nl.tudelft.jpacman.level;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import nl.tudelft.jpacman.board.GateSquare;
 
@@ -14,18 +13,13 @@ public final class GateCircuit {
     /**
      * Creates a circuit and initially closes all its gates.
      * @param id circuit identifier (1 or 2)
-     * @param gates gates controlled by this circuit
      */
-    public GateCircuit(int id, List<GateSquare> gates) {
+    public GateCircuit(int id) {
         if (id != 1 && id != 2) {
             throw new IllegalArgumentException("Circuit id must be 1 or 2");
         }
-        if (gates == null || gates.isEmpty()) {
-            throw new IllegalArgumentException(
-                "Circuit " + id + " needs at least one gate");
-        }
         this.id = id;
-        this.gates = Collections.unmodifiableList(new ArrayList<>(gates));
+        this.gates = new ArrayList<GateSquare>();
         this.open = false;
         for (GateSquare gate : this.gates) {
             if (gate.getCircuitId() != id) {
@@ -49,6 +43,16 @@ public final class GateCircuit {
     /** @return an unmodifiable list of gates controlled by this circuit */
     public List<GateSquare> getGates() {
         return gates;
+    }
+
+    /** adds a gate to the circuit.
+     * @param gate the gate to be added to the circuit
+     */
+    public void addGate(GateSquare gate) {
+        if (gate == null) {
+            throw new IllegalArgumentException("Gate cannot be null");
+        }
+        this.gates.add(gate);
     }
 
     /** Reverses the circuit's commanded state. */

@@ -69,20 +69,11 @@ public class MapParser {
         int height = map[0].length;
         ParseState state = new ParseState(width, height);
         makeGrid(map, state);
-        boolean usesCircuits = !state.gates.isEmpty() || !state.switches.isEmpty();
-        if (usesCircuits) {
-            validateCircuits(state.gates, state.switches);
-        }
 
         Board board = boardCreator.createBoard(state.grid);
-        Map<Integer, GateCircuit> circuits = new HashMap<>();
-        if (usesCircuits) {
-            for (int id = 1; id <= 2; id++) {
-                circuits.put(id, new GateCircuit(id, state.gates.get(id)));
-            }
-        }
+        
         return levelCreator.createLevel(
-            board, state.ghosts, state.startPositions, circuits);
+            board, state.ghosts, state.startPositions);
     }
 
     /** Holds the mutable data collected while parsing one map. */
@@ -90,8 +81,7 @@ public class MapParser {
         private final Square[][] grid;
         private final List<Ghost> ghosts = new ArrayList<>();
         private final List<Square> startPositions = new ArrayList<>();
-        private final Map<Integer, List<GateSquare>> gates = new HashMap<>();
-        private final Map<Integer, Integer> switches = new HashMap<>();
+        private final Map<Integer, GateCircuit> circuits = new HashMap<>();
 
         ParseState(int width, int height) {
             grid = new Square[width][height];
@@ -175,22 +165,19 @@ public class MapParser {
     }
 
     private void addSwitchSquare(ParseState state, int x, int y, int circuitId) {
-        state.grid[x][y] = boardCreator.createSwitch(circuitId);
-        Integer count = state.switches.get(circuitId);
-        if (count == null) {
-            state.switches.put(circuitId, 1);
-        } else {
-            state.switches.put(circuitId, count + 1);
+        if (state.circuits.get(circuitId) == null) {
+            state.circuits.put(circuitId, new GateCircuit(circuitId));
         }
+        state.grid[x][y] = boardCreator.createSwitch(state.circuits.get(circuitId));
     }
 
     private void addGateSquare(ParseState state, int x, int y, int circuitId) {
+        if (state.circuits.get(circuitId) == null) {
+            state.circuits.put(circuitId, new GateCircuit(circuitId));
+        }
         GateSquare gate = boardCreator.createGate(circuitId);
         state.grid[x][y] = gate;
-        if (!state.gates.containsKey(circuitId)) {
-            state.gates.put(circuitId, new ArrayList<GateSquare>());
-        }
-        state.gates.get(circuitId).add(gate);
+        state.circuits.get(circuitId).addGate(gate);
     }
 
     private int gateCircuitId(char symbol) {
@@ -198,30 +185,6 @@ public class MapParser {
             return 1;
         }
         return 2;
-    }
-
-    private String gateSymbol(int circuitId) {
-        if (circuitId == 1) {
-            return "a";
-        }
-        return "b";
-    }
-
-    private void validateCircuits(Map<Integer, List<GateSquare>> gates,
-                                  Map<Integer, Integer> switches) {
-        for (int id = 1; id <= 2; id++) {
-            if (!gates.containsKey(id) || gates.get(id).isEmpty()) {
-                String symbol = gateSymbol(id);
-                throw new PacmanConfigurationException(
-                    "Circuit " + id + " has no gate (expected symbol "
-                        + symbol + ").");
-            }
-            if (!switches.containsKey(id) || switches.get(id) == 0) {
-                throw new PacmanConfigurationException(
-                    "Circuit " + id + " has no switch (expected symbol "
-                        + id + ").");
-            }
-        }
     }
 
     /**

@@ -72,33 +72,15 @@ public class LevelFactory {
     }
 
     /**
-     * Creates a new level from the provided data.
-     *
-     * @param board
-     *            The board with all ghosts and pellets occupying their squares.
-     * @param ghosts
-     *            A list of all ghosts on the board.
-     * @param startPositions
-     *            A list of squares from which players may start the game.
-     * @return A new level for the board.
-     */
-    public Level createLevel(Board board, List<Ghost> ghosts, List<Square> startPositions) {
-        return createLevel(board, ghosts, startPositions,
-            java.util.Collections.<Integer, GateCircuit>emptyMap());
-    }
-
-    /**
      * Creates a level with its circuit controllers.
      * @param board board containing the level squares
      * @param ghosts ghosts present in the level
      * @param startPositions player starting squares
-     * @param circuits controllers for each gate circuit
      * @return the configured level
      */
-    public Level createLevel(Board board, List<Ghost> ghosts, List<Square> startPositions,
-                             Map<Integer, GateCircuit> circuits) {
+    public Level createLevel(Board board, List<Ghost> ghosts, List<Square> startPositions) {
         CollisionMap collisionMap = new PlayerCollisions(pointCalculator);
-        return new Level(board, ghosts, startPositions, collisionMap, circuits);
+        return new Level(board, ghosts, startPositions, collisionMap);
     }
 
     /**
