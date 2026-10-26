@@ -58,6 +58,12 @@ public class DefaultPlayerInteractionMap implements CollisionMap {
                 pointCalculator.consumedAPellet(player, pellet);
                 pellet.leaveSquare();
             });
+
+        collisionMap.onCollision(Player.class, PhasePulse.class,
+            (player, pulse) -> {
+                pulse.pulse();
+                pulse.leaveSquare();
+            });
         return collisionMap;
     }
 }

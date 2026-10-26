@@ -79,7 +79,7 @@ public class LevelFactory {
      * @return the configured level
      */
     public Level createLevel(Board board, List<Ghost> ghosts, List<Square> startPositions) {
-        CollisionMap collisionMap = new PlayerCollisions(pointCalculator);
+        CollisionMap collisionMap = new DefaultPlayerInteractionMap(pointCalculator);
         return new Level(board, ghosts, startPositions, collisionMap);
     }
 
@@ -112,6 +112,15 @@ public class LevelFactory {
      */
     public Pellet createPellet() {
         return new Pellet(PELLET_VALUE, sprites.getPelletSprite());
+    }
+
+    /**
+     * Creates a persistent floor switch for a circuit.
+     * @param circuit the switch circuit
+     * @return a new switch square
+     */
+    public PhasePulse createPhasePulse(GateCircuit circuit) {
+        return new PhasePulse(circuit, sprites.getPelletSprite());
     }
 
     /**

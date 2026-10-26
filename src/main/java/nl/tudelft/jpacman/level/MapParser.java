@@ -12,7 +12,6 @@ import java.util.Map;
 import nl.tudelft.jpacman.PacmanConfigurationException;
 import nl.tudelft.jpacman.board.Board;
 import nl.tudelft.jpacman.board.GateSquare;
-import nl.tudelft.jpacman.board.PhasePulseSquare;
 import nl.tudelft.jpacman.board.BoardFactory;
 import nl.tudelft.jpacman.board.Square;
 import nl.tudelft.jpacman.npc.Ghost;
@@ -191,9 +190,11 @@ public class MapParser {
         if (state.circuits.get(circuitId) == null) {
             state.circuits.put(circuitId, new GateCircuit(circuitId));
         }
-        PhasePulseSquare pulse = boardCreator.createPhasePulse(state.circuits.get(circuitId));
-        state.grid[x][y] = pulse;
-        // state.circuits.get(circuitId).addGate(gate);
+        Square square = boardCreator.createGround();
+        state.grid[x][y] = square;
+
+        PhasePulse pulse = levelCreator.createPhasePulse(state.circuits.get(circuitId));
+        pulse.occupy(square);
     }
 
     private int gateCircuitId(char symbol) {
