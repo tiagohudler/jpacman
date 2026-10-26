@@ -12,6 +12,7 @@ import java.util.Map;
 import nl.tudelft.jpacman.PacmanConfigurationException;
 import nl.tudelft.jpacman.board.Board;
 import nl.tudelft.jpacman.board.GateSquare;
+import nl.tudelft.jpacman.board.PhasePulseSquare;
 import nl.tudelft.jpacman.board.BoardFactory;
 import nl.tudelft.jpacman.board.Square;
 import nl.tudelft.jpacman.npc.Ghost;
@@ -147,6 +148,11 @@ public class MapParser {
             case 'b':
                 addGateSquare(state, x, y, gateCircuitId(c));
                 break;
+            case '!':
+                addPhasePulseSquare(state, x, y, 1);
+            case '?':
+                addPhasePulseSquare(state, x, y, 2);
+                break;
             default:
                 throw new PacmanConfigurationException("Invalid symbol " + c + " at " + x + y);
         }
@@ -178,6 +184,15 @@ public class MapParser {
         GateSquare gate = boardCreator.createGate(circuitId);
         state.grid[x][y] = gate;
         state.circuits.get(circuitId).addGate(gate);
+    }
+
+    private void addPhasePulseSquare(ParseState state, int x, int y, int circuitId) {
+        if (state.circuits.get(circuitId) == null) {
+            state.circuits.put(circuitId, new GateCircuit(circuitId));
+        }
+        PhasePulseSquare pulse = boardCreator.createPhasePulse(state.circuits.get(circuitId));
+        state.grid[x][y] = pulse;
+        // state.circuits.get(circuitId).addGate(gate);
     }
 
     private int gateCircuitId(char symbol) {

@@ -95,6 +95,15 @@ public class BoardFactory {
     }
 
     /**
+     * Creates a persistent floor switch for a circuit.
+     * @param circuit the switch circuit
+     * @return a new switch square
+     */
+    public PhasePulseSquare createPhasePulse(GateCircuit circuit) {
+        return new PhasePulseSquare(circuit, sprites.getPelletSprite());
+    }
+
+    /**
      * A wall is a square that is inaccessible to anyone.
      *
      * @author Jeroen Roosen

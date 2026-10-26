@@ -32,4 +32,10 @@ class MapParserCircuitTest {
         assertNotNull(parser().parseMap(
             Arrays.asList("########", "#P1a2b #", "########")));
     }
+
+    @Test
+    void acceptsBothPhasePulses() {
+        assertNotNull(parser().parseMap(
+            Arrays.asList("########", "#P1a2b #", "########", "###!?###")));
+    }
 }
