@@ -150,6 +150,7 @@ public class MapParser {
                 break;
             case '!':
                 addPhasePulseSquare(state, x, y, 1);
+                break;
             case '?':
                 addPhasePulseSquare(state, x, y, 2);
                 break;

@@ -40,7 +40,7 @@ public class PhasePulseSquare extends Square {
         super.put(occupant);
 
         if (occupant instanceof Player) {
-            this.circuit.toggle();
+            this.circuit.pulse();
         }
     }
 

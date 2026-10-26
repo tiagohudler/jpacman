@@ -54,6 +54,9 @@ public class LauncherSmokeTest {
         GateSquare circuitTwoGate =
             (GateSquare) board.squareAt(17, 13);
 
+        GateSquare circuitOneGate =
+            (GateSquare) board.squareAt(5, 13);
+
         // The game starts cleanly, with circuit 2's gate closed.
         assertThat(game.isInProgress()).isFalse();
         assertThat(circuitTwoGate.isOpen()).isFalse();
@@ -71,7 +74,10 @@ public class LauncherSmokeTest {
         assertThat(player.getScore()).isEqualTo(10);
 
         move(game, Direction.EAST, 7);
-        assertThat(player.getScore()).isEqualTo(60);
+        assertThat(player.getScore()).isEqualTo(50);
+
+        // Reach circuit 1 pulse
+        assertThat(circuitOneGate.isOpen()).isTrue();
 
         // Reach the circuit-2 switch in the lower-right corridor.
         move(game, Direction.SOUTH, 2);
@@ -82,7 +88,7 @@ public class LauncherSmokeTest {
         assertThat(player.getSquare())
             .isSameAs(board.squareAt(19, 19));
 
-        // The switch should open circuit 2's gate.
+        // The switch should close circuit 2's gate during the pulse.
         assertThat(circuitTwoGate.isOpen()).isTrue();
 
         // Return to the gate and verify that Pac-Man can enter it.

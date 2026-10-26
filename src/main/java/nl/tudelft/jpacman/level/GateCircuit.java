@@ -2,12 +2,16 @@ package nl.tudelft.jpacman.level;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import nl.tudelft.jpacman.board.GateSquare;
 
 /** Coordinates a single circuit's command across all of its gates. */
 public final class GateCircuit {
     private final int id;
     private final List<GateSquare> gates;
+    private final Timer pulseTimer;
     private boolean open;
 
     /**
@@ -28,6 +32,7 @@ public final class GateCircuit {
             }
             gate.close();
         }
+        pulseTimer = new Timer("Pulse");
     }
 
     /** @return this circuit's identifier */
@@ -58,6 +63,18 @@ public final class GateCircuit {
     /** Reverses the circuit's commanded state. */
     public void toggle() {
         setOpen(!open);
+    }
+
+    /** Reverses the circuit's commanded state. */
+    public void pulse() {
+        toggle();
+        TimerTask task = new TimerTask() {
+            public void run() {
+                toggle();
+            }
+        };
+        int delay = 5000;
+        this.pulseTimer.schedule(task, delay);
     }
 
     /**
