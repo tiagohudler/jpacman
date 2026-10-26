@@ -1,10 +1,10 @@
 package nl.tudelft.jpacman.level;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
+import javax.swing.Timer;
 import nl.tudelft.jpacman.board.GateSquare;
 
 /** Coordinates a single circuit's command across all of its gates. */
@@ -32,7 +32,13 @@ public final class GateCircuit {
             }
             gate.close();
         }
-        pulseTimer = new Timer("Pulse");
+        ActionListener taskPerformer = new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                toggle();
+            }
+        };
+        pulseTimer = new Timer(5000, taskPerformer);
+        pulseTimer.setRepeats(false);
     }
 
     /** @return this circuit's identifier */
@@ -67,14 +73,13 @@ public final class GateCircuit {
 
     /** Reverses the circuit's commanded state. */
     public void pulse() {
+        if (this.pulseTimer.isRunning()) {
+            this.pulseTimer.restart();
+            return;
+        }
+
         toggle();
-        TimerTask task = new TimerTask() {
-            public void run() {
-                toggle();
-            }
-        };
-        int delay = 5000;
-        this.pulseTimer.schedule(task, delay);
+        this.pulseTimer.start();
     }
 
     /**
