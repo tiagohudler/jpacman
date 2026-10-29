@@ -15,6 +15,7 @@ public final class GateCircuit {
     private final Timer pulseTimer;
     // counts how many pulses are queued
     private AtomicInteger remainingPulses;
+    private boolean isPaused;
     private boolean open;
 
     /**
@@ -42,6 +43,7 @@ public final class GateCircuit {
         };
         pulseTimer = new Timer(5000, taskPerformer);
         pulseTimer.setRepeats(false);
+        isPaused = false;
         remainingPulses = new AtomicInteger(0);
     }
 
@@ -80,7 +82,7 @@ public final class GateCircuit {
         setOpen(!open);
     }
 
-    /** Reverses the circuit's commanded state. */
+    /** Reverses the circuit's commanded state. If a pulse is running, setup pulse extension */
     public void pulse() {
         if (this.pulseTimer.isRunning()) {
             this.remainingPulses.addAndGet(1);
@@ -95,12 +97,13 @@ public final class GateCircuit {
     public void pause() {
         if (this.pulseTimer.isRunning()) {
             this.pulseTimer.stop();
+            this.isPaused = true;
         }
     }
 
     /** Restarts the pulse in a circuit. */
     public void restart() {
-        if (this.pulseTimer.isRunning()) {
+        if (this.isPaused) {
             this.pulseTimer.start();
         }
     }
