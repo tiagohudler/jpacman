@@ -74,6 +74,10 @@ public final class GateCircuit {
 
     /** Reverses the circuit's commanded state. */
     public void toggle() {
+        if (isPaused) {
+            this.pulseTimer.restart();
+            return;
+        }
         if (remainingPulses.get() > 0) {
             remainingPulses.decrementAndGet();
             this.pulseTimer.start();
@@ -96,7 +100,6 @@ public final class GateCircuit {
     /** Pauses the pulse in a circuit. */
     public void pause() {
         if (this.pulseTimer.isRunning()) {
-            this.pulseTimer.stop();
             this.isPaused = true;
         }
     }
@@ -104,7 +107,7 @@ public final class GateCircuit {
     /** Restarts the pulse in a circuit. */
     public void restart() {
         if (this.isPaused) {
-            this.pulseTimer.start();
+            this.isPaused = false;
         }
     }
 
