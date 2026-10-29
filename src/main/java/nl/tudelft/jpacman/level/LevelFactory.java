@@ -1,5 +1,6 @@
 package nl.tudelft.jpacman.level;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -78,9 +79,9 @@ public class LevelFactory {
      * @param startPositions player starting squares
      * @return the configured level
      */
-    public Level createLevel(Board board, List<Ghost> ghosts, List<Square> startPositions) {
+    public Level createLevel(Board board, List<Ghost> ghosts, List<Square> startPositions, Collection<GateCircuit> circuits) {
         CollisionMap collisionMap = new DefaultPlayerInteractionMap(pointCalculator);
-        return new Level(board, ghosts, startPositions, collisionMap);
+        return new Level(board, ghosts, startPositions, circuits, collisionMap);
     }
 
     /**

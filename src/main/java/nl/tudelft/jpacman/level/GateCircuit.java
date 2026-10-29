@@ -6,12 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Timer;
 import nl.tudelft.jpacman.board.GateSquare;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /** Coordinates a single circuit's command across all of its gates. */
 public final class GateCircuit {
     private final int id;
     private final List<GateSquare> gates;
     private final Timer pulseTimer;
+    // counts how many pulses are queued
+    private AtomicInteger remainingPulses;
     private boolean open;
 
     /**
@@ -39,6 +42,7 @@ public final class GateCircuit {
         };
         pulseTimer = new Timer(5000, taskPerformer);
         pulseTimer.setRepeats(false);
+        remainingPulses = new AtomicInteger(0);
     }
 
     /** @return this circuit's identifier */
@@ -68,18 +72,37 @@ public final class GateCircuit {
 
     /** Reverses the circuit's commanded state. */
     public void toggle() {
+        if (remainingPulses.get() > 0) {
+            remainingPulses.decrementAndGet();
+            this.pulseTimer.start();
+            return;
+        }
         setOpen(!open);
     }
 
     /** Reverses the circuit's commanded state. */
     public void pulse() {
         if (this.pulseTimer.isRunning()) {
-            this.pulseTimer.restart();
+            this.remainingPulses.addAndGet(1);
             return;
         }
 
         toggle();
         this.pulseTimer.start();
+    }
+
+    /** Pauses the pulse in a circuit. */
+    public void pause() {
+        if (this.pulseTimer.isRunning()) {
+            this.pulseTimer.stop();
+        }
+    }
+
+    /** Restarts the pulse in a circuit. */
+    public void restart() {
+        if (this.pulseTimer.isRunning()) {
+            this.pulseTimer.start();
+        }
     }
 
     /**

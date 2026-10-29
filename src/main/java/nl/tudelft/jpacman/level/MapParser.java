@@ -73,7 +73,7 @@ public class MapParser {
         Board board = boardCreator.createBoard(state.grid);
         
         return levelCreator.createLevel(
-            board, state.ghosts, state.startPositions);
+            board, state.ghosts, state.startPositions, state.circuits.values());
     }
 
     /** Holds the mutable data collected while parsing one map. */

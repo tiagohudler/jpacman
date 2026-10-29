@@ -6,6 +6,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+
 import nl.tudelft.jpacman.board.Board;
 import nl.tudelft.jpacman.board.Square;
 import nl.tudelft.jpacman.npc.Ghost;
@@ -61,7 +64,7 @@ class LevelTest {
     void setUp() {
         final long defaultInterval = 100L;
         level = new Level(board, Lists.newArrayList(ghost), Lists.newArrayList(
-            square1, square2), collisions);
+            square1, square2), new ArrayList<GateCircuit>(), collisions);
         when(ghost.getInterval()).thenReturn(defaultInterval);
     }
 
