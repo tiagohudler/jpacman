@@ -26,4 +26,26 @@ class GateCircuitTest {
         two.toggle();
         assertTrue(b1.isOpen());
     }
+
+    /** Verifies that a circuit toggles all its gates without affecting another circuit. */
+    @Test
+    void pulseAlternatesCircuitStateIfNotRunning() {
+        GateSquare a1 = new GateSquare(1, null, null);
+        GateCircuit one = new GateCircuit(1);
+        one.addGate(a1);
+        one.pulse();
+        assertTrue(a1.isOpen());
+    }
+
+    /** Verifies that a circuit toggles all its gates without affecting another circuit. */
+    @Test
+    void pulseExtendsRunningPulse() {
+        GateSquare a1 = new GateSquare(1, null, null);
+        GateCircuit one = new GateCircuit(1);
+        one.addGate(a1);
+        one.pulse();
+        assertTrue(a1.isOpen());
+        one.pulse();
+        assertTrue(a1.isOpen());
+    }
 }

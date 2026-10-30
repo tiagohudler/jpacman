@@ -1,6 +1,7 @@
 package nl.tudelft.jpacman.level;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -79,14 +80,20 @@ public class Level {
     private final Set<LevelObserver> observers;
 
     /**
+     * The circuits in this level.
+     */
+    private final Collection<GateCircuit> circuits;
+
+    /**
      * Creates a level with optional circuit controllers.
      * @param board board for this level
      * @param ghosts ghosts controlled by the level
      * @param startPositions player starting squares
      * @param collisionMap collision rules for entities
+     * @param circuits gate circuits in the level
      */
     public Level(Board board, List<Ghost> ghosts, List<Square> startPositions,
-                 CollisionMap collisionMap) {
+         Collection<GateCircuit> circuits, CollisionMap collisionMap) {
         assert board != null;
         assert ghosts != null;
         assert startPositions != null;
@@ -100,6 +107,7 @@ public class Level {
         this.startSquares = startPositions;
         this.startSquareIndex = 0;
         this.players = new ArrayList<>();
+        this.circuits = circuits;
         this.collisions = collisionMap;
         this.observers = new HashSet<>();
     }
@@ -201,6 +209,7 @@ public class Level {
                 return;
             }
             startNPCs();
+            resumeCircuits();
             inProgress = true;
             updateObservers();
         }
@@ -216,6 +225,7 @@ public class Level {
                 return;
             }
             stopNPCs();
+            pauseCircuits();
             inProgress = false;
         }
     }
@@ -235,6 +245,15 @@ public class Level {
     }
 
     /**
+     * Restarts all circuits. Only has effect if game is paused.
+     */
+    private void resumeCircuits() {
+        for (final GateCircuit circuit : this.circuits) {
+            circuit.restart();
+        }
+    }
+
+    /**
      * Stops all NPC movement scheduling and interrupts any movements being
      * executed.
      */
@@ -243,6 +262,15 @@ public class Level {
             ScheduledExecutorService schedule = entry.getValue();
             assert schedule != null;
             schedule.shutdownNow();
+        }
+    }
+
+    /**
+     * Pauses all circuits.
+     */
+    private void pauseCircuits() {
+        for (final GateCircuit circuit : this.circuits) {
+            circuit.pause();
         }
     }
 

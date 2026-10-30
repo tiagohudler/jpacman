@@ -73,7 +73,7 @@ public class MapParser {
         Board board = boardCreator.createBoard(state.grid);
         
         return levelCreator.createLevel(
-            board, state.ghosts, state.startPositions);
+            board, state.ghosts, state.startPositions, state.circuits.values());
     }
 
     /** Holds the mutable data collected while parsing one map. */
@@ -141,11 +141,11 @@ public class MapParser {
                 break;
             case '1':
             case '2':
-                addSwitchSquare(state, x, y, c - '0');
-                break;
             case 'a':
             case 'b':
-                addGateSquare(state, x, y, gateCircuitId(c));
+            case '!':
+            case '?':
+                addCircuitSquare(state, x, y, c);
                 break;
             default:
                 throw new PacmanConfigurationException("Invalid symbol " + c + " at " + x + y);
@@ -171,6 +171,25 @@ public class MapParser {
         state.grid[x][y] = boardCreator.createSwitch(state.circuits.get(circuitId));
     }
 
+    private void addCircuitSquare(ParseState state, int x, int y, char c) {
+        switch (c) {
+            case '1':
+            case '2':
+                addSwitchSquare(state, x, y, c - '0');
+                break;
+            case 'a':
+            case 'b':
+                addGateSquare(state, x, y, gateCircuitId(c));
+                break;
+            case '!':
+            case '?':
+                addPhasePulseSquare(state, x, y, gateCircuitId(c));
+                break;
+            default:
+                throw new PacmanConfigurationException("Invalid symbol " + c + " at " + x + y);
+        }
+    }
+
     private void addGateSquare(ParseState state, int x, int y, int circuitId) {
         if (state.circuits.get(circuitId) == null) {
             state.circuits.put(circuitId, new GateCircuit(circuitId));
@@ -180,8 +199,19 @@ public class MapParser {
         state.circuits.get(circuitId).addGate(gate);
     }
 
+    private void addPhasePulseSquare(ParseState state, int x, int y, int circuitId) {
+        if (state.circuits.get(circuitId) == null) {
+            state.circuits.put(circuitId, new GateCircuit(circuitId));
+        }
+        Square square = boardCreator.createGround();
+        state.grid[x][y] = square;
+
+        PhasePulse pulse = levelCreator.createPhasePulse(state.circuits.get(circuitId));
+        pulse.occupy(square);
+    }
+
     private int gateCircuitId(char symbol) {
-        if (symbol == 'a') {
+        if (symbol == 'a' || symbol == '!') {
             return 1;
         }
         return 2;

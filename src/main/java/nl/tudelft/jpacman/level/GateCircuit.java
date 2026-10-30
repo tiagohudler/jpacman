@@ -1,13 +1,23 @@
 package nl.tudelft.jpacman.level;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import nl.tudelft.jpacman.board.GateSquare;
+import nl.tudelft.jpacman.util.PausableTimer;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /** Coordinates a single circuit's command across all of its gates. */
 public final class GateCircuit {
+    private static final int PULSE_DELAY = 5000;
+
     private final int id;
     private final List<GateSquare> gates;
+    private final PausableTimer pulseTimer;
+    // counts how many pulses are queued
+    private AtomicInteger remainingPulses;
     private boolean open;
 
     /**
@@ -28,6 +38,14 @@ public final class GateCircuit {
             }
             gate.close();
         }
+        ActionListener taskPerformer = new ActionListener() {
+            @Override 
+            public void actionPerformed(ActionEvent evt) {
+                toggle();
+            }
+        };
+        pulseTimer = new PausableTimer(PULSE_DELAY, taskPerformer);
+        remainingPulses = new AtomicInteger(0);
     }
 
     /** @return this circuit's identifier */
@@ -57,7 +75,33 @@ public final class GateCircuit {
 
     /** Reverses the circuit's commanded state. */
     public void toggle() {
+        if (remainingPulses.get() > 0) {
+            remainingPulses.decrementAndGet();
+            this.pulseTimer.start();
+            return;
+        }
         setOpen(!open);
+    }
+
+    /** Reverses the circuit's commanded state. If a pulse is running, setup pulse extension */
+    public void pulse() {
+        if (this.pulseTimer.isRunning()) {
+            this.remainingPulses.addAndGet(1);
+            return;
+        }
+
+        toggle();
+        this.pulseTimer.start();
+    }
+
+    /** Pauses the pulse in a circuit. */
+    public void pause() {
+        this.pulseTimer.pause();
+    }
+
+    /** Restarts the pulse in a circuit. */
+    public void restart() {
+        this.pulseTimer.resume();
     }
 
     /**
