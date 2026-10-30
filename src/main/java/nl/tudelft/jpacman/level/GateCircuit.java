@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /** Coordinates a single circuit's command across all of its gates. */
 public final class GateCircuit {
+    private static final int PULSE_DELAY = 5000;
+
     private final int id;
     private final List<GateSquare> gates;
     private final PausableTimer pulseTimer;
@@ -37,11 +39,12 @@ public final class GateCircuit {
             gate.close();
         }
         ActionListener taskPerformer = new ActionListener() {
+            @Override 
             public void actionPerformed(ActionEvent evt) {
                 toggle();
             }
         };
-        pulseTimer = new PausableTimer(5000, taskPerformer);
+        pulseTimer = new PausableTimer(PULSE_DELAY, taskPerformer);
         remainingPulses = new AtomicInteger(0);
     }
 

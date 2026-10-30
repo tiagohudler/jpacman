@@ -40,13 +40,13 @@ public class PausableTimer {
         }
 
         // convertion should not be a problem for our application
-        var timeLeft = this.timer.getDelay() - (int)(System.currentTimeMillis() - startTimeMillis);
+        var timeLeft = this.timer.getDelay() - (int) (System.currentTimeMillis() - startTimeMillis);
         this.timer.stop();
         this.timer.setInitialDelay(timeLeft);
         this.isPaused = true;
     }
 
-    /** Resumes the timer */
+    /** Resumes the timer. */
     public void resume() {
         if (!this.isPaused) {
             return;
@@ -56,7 +56,9 @@ public class PausableTimer {
         this.isPaused = false;
     }
 
-    /** Whether the timer is running */
+    /** Whether the timer is running.
+     * @return whether the timer is running
+     */
     public boolean isRunning() {
         return this.timer.isRunning();
     }

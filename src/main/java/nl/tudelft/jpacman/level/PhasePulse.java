@@ -6,6 +6,7 @@ import nl.tudelft.jpacman.sprite.Sprite;
 import java.awt.Color;
 import java.awt.Graphics;
 
+/** Represents a phase pulse consummable, which switches the phase of a circuit for 5 seconds. */
 public class PhasePulse extends Unit {
     private final Sprite sprite;
     private final GateCircuit circuit;
@@ -24,8 +25,8 @@ public class PhasePulse extends Unit {
         this.sprite = new MarkedSprite(keySprite, String.valueOf(circuit.getId()));
     }
 
-    /** Activates a pulse on the circuit wired to this phase pulse unit */
-    public void pulse(){
+    /** Activates a pulse on the circuit wired to this phase pulse unit. */
+    public void pulse() {
         this.circuit.pulse();
     }
 

@@ -92,8 +92,8 @@ public class Level {
      * @param collisionMap collision rules for entities
      * @param circuits gate circuits in the level
      */
-    public Level(Board board, List<Ghost> ghosts, List<Square> startPositions, Collection<GateCircuit> circuits,
-                 CollisionMap collisionMap) {
+    public Level(Board board, List<Ghost> ghosts, List<Square> startPositions,
+         Collection<GateCircuit> circuits, CollisionMap collisionMap) {
         assert board != null;
         assert ghosts != null;
         assert startPositions != null;

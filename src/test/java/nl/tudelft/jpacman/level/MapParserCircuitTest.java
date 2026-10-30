@@ -33,6 +33,7 @@ class MapParserCircuitTest {
             Arrays.asList("########", "#P1a2b #", "########")));
     }
 
+    /** Verifies that maps containing both phase pulses are accepted. */
     @Test
     void acceptsBothPhasePulses() {
         assertNotNull(parser().parseMap(
